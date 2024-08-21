@@ -2,8 +2,6 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from courses.models import Course
-
 
 class CustomUser(AbstractUser):
     """Кастомная модель пользователя - студента."""
@@ -22,6 +20,7 @@ class CustomUser(AbstractUser):
     )
 
     class Meta:
+        db_table = 'auth_user'
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ('-id',)
@@ -33,7 +32,7 @@ class CustomUser(AbstractUser):
 class Balance(models.Model):
     """Модель баланса пользователя."""
 
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         CustomUser,
         on_delete=models.CASCADE,
         related_name='balance'
@@ -58,13 +57,13 @@ class Subscription(models.Model):
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name='subscription',
+        related_name='subscriptions',
         verbose_name='Пользователь'
     )
     course = models.ForeignKey(
-        Course,
+        'courses.Course',
         on_delete=models.CASCADE,
-        related_name='subscription',
+        related_name='subscriptions',
         verbose_name='Курс'
     )
     created_at = models.DateTimeField(
@@ -76,3 +75,4 @@ class Subscription(models.Model):
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         ordering = ('-id',)
+        unique_together = (('user', 'course'),)

@@ -21,6 +21,7 @@ class Course(models.Model):
         verbose_name='Дата и время начала курса'
     )
     price = models.DecimalField(
+        default=0,
         max_digits=10,
         decimal_places=2,
         verbose_name='Стоимость'
@@ -66,8 +67,13 @@ class Group(models.Model):
 
     users = models.ManyToManyField(
         User,
-        related_name='groups',
+        related_name='course_groups',
         verbose_name='Пользователи'
+    )
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name='groups'
     )
 
     class Meta:

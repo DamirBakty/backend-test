@@ -13,5 +13,13 @@ def post_save_subscription(sender, instance: Subscription, created, **kwargs):
     """
 
     if created:
-        pass
-        # TODO
+        course = instance.course
+        user = instance.user
+
+        groups = course.groups.annotate(
+            user_count=Count('users')
+        ).order_by('user_count')
+
+        if groups.exists():
+            group = groups.first()
+            group.users.add(user)

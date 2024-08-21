@@ -49,10 +49,9 @@ class StudentSerializer(serializers.ModelSerializer):
 class GroupSerializer(serializers.ModelSerializer):
     """Список групп."""
 
-    # TODO Доп. задание
-
     class Meta:
         model = Group
+        fields = '__all__'
 
 
 class CreateGroupSerializer(serializers.ModelSerializer):
@@ -61,7 +60,7 @@ class CreateGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = (
-            'title',
+            'users',
             'course',
         )
 
@@ -87,19 +86,37 @@ class CourseSerializer(serializers.ModelSerializer):
 
     def get_lessons_count(self, obj):
         """Количество уроков в курсе."""
-        # TODO Доп. задание
+        return obj.lessons.count()
 
     def get_students_count(self, obj):
         """Общее количество студентов на курсе."""
-        # TODO Доп. задание
+        return obj.subscriptions.count()
 
     def get_groups_filled_percent(self, obj):
         """Процент заполнения групп, если в группе максимум 30 чел.."""
-        # TODO Доп. задание
+        total_groups = obj.groups.count()
+        if total_groups == 0:
+            return 0.0
+
+        total_students = obj.groups.aggregate(
+            total_students=Count('users')
+        )['total_students']
+
+        # Max capacity for each group
+        max_capacity_per_group = 30
+        total_capacity = total_groups * max_capacity_per_group
+
+        # Calculate the fill percentage
+        return (total_students / total_capacity) * 100
 
     def get_demand_course_percent(self, obj):
         """Процент приобретения курса."""
-        # TODO Доп. задание
+        total_users = User.objects.count()
+        if total_users == 0:
+            return 0.0
+
+        subscriptions_count = obj.subscriptions.count()
+        return (subscriptions_count / total_users) * 100
 
     class Meta:
         model = Course
@@ -122,3 +139,4 @@ class CreateCourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
+        fields = '__all__'
